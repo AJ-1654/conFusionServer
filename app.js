@@ -17,9 +17,9 @@ const Leaders = require('./models/leaders');
 const url = 'mongodb://localhost:27017/conFusion';
 const connect = mongoose.connect(url);
 
-connect.then((db)=>{
+connect.then((db) => {
   console.log('Connected correctly to server');
-},(err)=>{
+}, (err) => {
   console.log(err);
 });
 
@@ -39,6 +39,33 @@ app.use(express.urlencoded({
   extended: false
 }));
 app.use(cookieParser());
+
+function auth(req, res, next) {
+  console.log(req.headers);
+  var authHeader = req.headers.authorization;
+  if (!authHeader) {
+    var err = new Error('You are not authenticated!');
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err.status = 401;
+    next(err);
+    return;
+  }
+
+  var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+  var user = auth[0];
+  var pass = auth[1];
+  if (user == 'admin' && pass == 'password') {
+    next(); // authorized
+  } else {
+    var err2 = new Error('You are not authenticated!');
+    res.setHeader('WWW-Authenticate', 'Basic');
+    err2.status = 401;
+    next(err2);
+  }
+}
+
+app.use(auth);
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
