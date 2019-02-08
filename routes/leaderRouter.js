@@ -11,7 +11,7 @@ leaderRouter.route('/')
         res.sendStatus(200);
     })
     .get(cors.cors, (req, res, next) => {
-        Leaders.find({})
+        Leaders.find(req.query)
             .then((leaders) => {
                 res.statusCode = 200;
                 res.setHeader('Content-type', 'application/json');
@@ -61,8 +61,8 @@ leaderRouter.route('/:leaderId')
     })
     .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
         Leaders.findByIdAndUpdate(req.params.leaderId, {
-                $set: req.body
-            }, {
+            $set: req.body
+        }, {
                 new: true
             })
             .then((leader) => {
